@@ -1,0 +1,6 @@
+random_seed: 42
+train_size: 0.8
+spline_knots: 3
+spline_deg: 3
+cv_folds: 5
+cv_scoring_metric: 'recall'
