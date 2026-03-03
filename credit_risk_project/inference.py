@@ -4,6 +4,7 @@ and for now just returns the binary prediction about whether delinquent or not "
 import os
 import pickle as pkl
 import pandas as pd
+import numpy as np
 from schemas import features
 
 # first make sure that path is the current working directory
@@ -49,10 +50,11 @@ def return_inference(input_features):
     # REORDER columns to be same as used in model (because xgboost converts to arrays internally, 
     # so ordering of feaftures matter). Use .loc method for this
     data_df_reordered = data_df.loc[:, model.feature_names_in_]
-    print(data_df.columns)
 
     # then get predictions using the data (pipeline object takes care of preprocessing)
-    y_pred = model.predict(data_df_reordered)
+    # squeeze prediction so that 1D (because for now just want one prediction) - otherwise error
+    # in newer python versions
+    y_pred = np.squeeze(model.predict(data_df_reordered))
 
     # convert prediction to standard integer so that can be serialised by FastAPI
     return int(y_pred)
