@@ -13,7 +13,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # get random seed and training proportion for train test split
-with open('config.yaml') as f:
+with open('config.yml') as f:
     config = yaml.safe_load(f)
 
 random_seed = config['random_seed']

@@ -11,10 +11,10 @@ app = FastAPI()
 # set up a test get function to sanity check that the API works
 @app.get('/')
 def get_a_signal():
-    return 'hello world!'
+    return {'msg': 'hello world!'}
 
 # set up function to process POST request to 
-@app.post('/')
+@app.post('/predict')
 def return_prediction(data: features):
     # run ML model
     inference = return_inference(data)

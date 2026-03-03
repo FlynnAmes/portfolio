@@ -1,0 +1,73 @@
+""" Tests for input and output schemas as well as API, using pytest """
+
+import pytest
+from schemas import features, prediction
+from pydantic import ValidationError
+# import app from app.py file
+from app import app
+from fastapi.testclient import TestClient
+
+##########
+# fixtures
+##########
+
+# good data with appropriate types (in different order to tat which model trained, but should 
+# not matter)
+@pytest.fixture
+def input_data():
+    return { 'rev_util': float(0.2),
+             'age': int(37),
+             'late_30_59': int(1), 
+             'debt_ratio': float(0.2), 
+             'open_credit': int(1),
+             'late_90': int(0), 
+             'dependents': int(2), 
+             'real_estate': int(0),  
+             'late_60_89': int(1), 
+             'monthly_inc': float(2000),}
+
+######################
+# define tests
+######################
+
+def test_pydantic_feature_schema_accepts_good_data(input_data):
+    assert features(**input_data)
+
+
+def test_pydantic_feature_schema_rejects_bad_data(input_data):
+    # create copy of initial dictionary (pytest unpacks fixture by this point?)
+    bad_input_data = input_data.copy()
+    # alter one value of the good data to the wrong type
+    bad_input_data['late_60_89'] = "a string"
+    # then check whether appropiate error is raised
+    with pytest.raises(ValidationError):
+        features(**bad_input_data)
+
+# just accepts one value so no need for fixture yet
+def test_pydantic_prediction_schema_accepts_good_data():
+    assert prediction(inference=1)
+
+
+def test_pydantic_prediction_schema_rejects_bad_data():
+    # then check whether appropiate error is raised
+    with pytest.raises(ValidationError):
+        features(inference='a string')
+
+#################
+# tests for API
+#################
+
+# can set up testclient to test app without manually starting server
+client = TestClient(app)
+
+def test_get_OK_status_code_good_data(input_data):
+    assert client.post('/predict', json=input_data).status_code == 200
+
+def test_get_error_status_code_bad_data(input_data):
+    # test removing a row
+    incomplete_data = input_data.copy().pop('late_60_89')
+    # should get error saying that data syntactically correct but could not be processed
+    assert client.post('/predict', json=incomplete_data).status_code == 422
+
+
+#TODO: test pipelines and models themselves

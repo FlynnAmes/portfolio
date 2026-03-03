@@ -21,7 +21,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # get constants from yaml
-with open('config.yaml') as f:
+with open('config.yml') as f:
     config = yaml.safe_load(f)
 
 random_seed = config['random_seed']
