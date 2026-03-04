@@ -15,13 +15,57 @@ import pickle as pkl
 import yaml
 import json
 from datetime import datetime
+from paths import LOGS_PATH, MODELS_PATH, CONFIG_PATH, DATA_PATH
 
-# first make sure that path is the current working directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
+###########
+# functions
+###########
 
-# get constants from yaml
-with open('../config.yml') as f:
+def log_training_params(clf, model_name):
+    """ Logs hyperparameters of sklearn estimators, as well as
+      cross validation results obtained during training. 
+      Logs are saved using the current date, along with a name given to the model, to 
+      the logs/ directory
+
+      clf: the trained model pipeline object
+      model_name: the name of the model (string), used for saving """
+    
+    pipeline_params = clf.best_estimator_.get_params()
+
+    # then convert to string where not simple python object, so can serialise into json
+    # (nested loop fine here as not many params)
+    pipeline_params_reformat = {k: str(var) if not isinstance(var, (int, float, str, bool, type(None))) 
+                                else var for k, var in pipeline_params.items()}
+
+    # get name for run, using current time, as well as model name
+    run_name = datetime.now().strftime('%Y%m%d') + f'_{model_name}'  # could use _%H%m%S on top
+    savedir = LOGS_PATH / run_name
+
+    # if dir name does not exist, make it
+    os.makedirs(savedir, exist_ok=True)
+
+    # and finally dump to JSON
+    with open(savedir / 'hyperparams.json', 'w') as f:
+        json.dump(pipeline_params_reformat, f, indent=4)
+
+    # also dump to JSON the cv results (to check if large variation in this)
+    pd.DataFrame(data=clf.cv_results_).to_csv(savedir / 'cv_results.csv')
+
+
+def save_model(clf, model_name):
+    """ saves the ML model to the models directory in pickle format, using model name (along 
+     with MODELS PATH defined in paths.py) """
+
+    with open(MODELS_PATH / (model_name + '.pkl'), 'wb') as f:
+        pkl.dump(clf, f)
+
+
+###############
+# loading config parameters and data
+###############
+
+# get from yaml
+with open(CONFIG_PATH) as f:
     config = yaml.safe_load(f)
 
 random_seed = config['random_seed']
@@ -32,8 +76,12 @@ cv_scoring_metric = config['cv_scoring_metric']
 lr_max_iter = config['logistic_regression_max_iter']
 
 # load in training data
-X_train = pd.read_pickle('../data/processed/X_train.pkl')
-y_train = pd.read_pickle('../data/processed/y_train.pkl')
+X_train = pd.read_pickle(DATA_PATH / 'processed' / 'X_train.pkl')
+y_train = pd.read_pickle(DATA_PATH / 'processed' / 'y_train.pkl')
+
+###########
+# transformers and pipelines
+###########
 
 # create log transformer
 LogTransformer = FunctionTransformer(np.log1p)
@@ -55,11 +103,12 @@ pipeLrSomeLog = Pipeline([('scale_log', ctLogScaleSome), ('scale_stand', Standar
                         ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
 pipeLrSomeLogSomeSpline = Pipeline([('scale_log', ctLogSomeSplineOpCred), ('scale_stand', StandardScaler()), 
                         ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
-
-# # and an xgboost - no need for scaling here
-# pipe_xgb = Pipeline(('clf', XGBClassifier()))
 # and an xgboost - no need for scaling here
 pipe_xgb = Pipeline([('clf', XGBClassifier())])
+
+#############
+# parameter dictionaries
+#############
 
 # dictionary for parameters to search in random CV, as a test
 params_dict_lr = {
@@ -106,37 +155,19 @@ for model in pipe_dictionary.keys():
     
     print(model, '\n')
 
-    # # fit the classifier to training data. random search will test hyperparameters in different folds. 
-    # # Will then return model object at end fitted to entire training dataset
+    # fit the classifier to training data. random search will test hyperparameters in different folds. 
+    # Will then return model object at end fitted to entire training dataset
     clf.fit(X_train, y_train)
+
     print('model fitted', '\n')
 
     # then serialise model as pkl, saving it
-    with open(f'../models/{model}.pkl', 'wb') as f:
-        pkl.dump(clf, f)
+    save_model(clf=clf, model_name=model)
     
     print('model saved', '\n')
-    # dump model pipeline estimators and hyperparameter to JSON, first getting
-    pipeline_params = clf.best_estimator_.get_params()
 
-    # then convert to string where not simple python object, so can serialise into json
-    # (nested loop fine here as not many params)
-    pipeline_params_reformat = {k: str(var) if not isinstance(var, (int, float, str, bool, type(None))) 
-                                else var for k, var in pipeline_params.items()}
-
-    # get name for run, using current time, as well as model name
-    run_name = datetime.now().strftime('%Y%m%d') + f'_{model}'  # could use _%H%m%S on top
-    savedir = '../logs/' + run_name
-
-    # if dir name does not exist, make it
-    if os.path.exists(savedir) is False:
-        os.makedirs(savedir)
-
-    # and finally dump to JSON
-    with open(savedir + '/hyperparams.json', 'w') as f:
-        json.dump(pipeline_params_reformat, f, indent=4)
-
-    # also dump to JSON the cv results (to check if large variation in this)
-    pd.DataFrame(data=clf.cv_results_).to_csv(savedir + '/cv_results.csv')
+    # now log parameters in model
+    log_training_params(clf=clf, model_name=model)
 
     print('params logged', '\n')
+

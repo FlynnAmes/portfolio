@@ -6,10 +6,8 @@ import pickle as pkl
 import pandas as pd
 import numpy as np
 from schemas import features
+from paths import MODELS_PATH
 
-# first make sure that path is the current working directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
 
 #NOTE: will probably put this function elsewhere at some point. Need to figure out how to connect to the API
 
@@ -39,14 +37,14 @@ def return_inference(input_features):
         # .difference here returns columns that required but not in input dictionary
         raise KeyError(f'missing required columns in input dictionary: {required_cols.difference(feature_dict)}')
 
-    with open('../models/xgb.pkl', 'rb') as f:
+    with open(MODELS_PATH / 'xgb.pkl', 'rb') as f:
         # now load in the xgboost model
         model = pkl.load(f)
 
     # convert input dictionary to dataFrame. wrap in list because of scalar values (as assuming 
     # singular inference here)
     data_df = pd.DataFrame.from_dict([feature_dict])
-    # print(data_df.columns)
+ 
     # REORDER columns to be same as used in model (because xgboost converts to arrays internally, 
     # so ordering of feaftures matter). Use .loc method for this
     data_df_reordered = data_df.loc[:, model.feature_names_in_]
