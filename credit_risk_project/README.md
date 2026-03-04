@@ -1,9 +1,10 @@
 <h1> Overview </h1>
 
-This project (polishing/productionising in progress) provides a classifier that predicts whether or not someone 
+This project (polishing/refactoring in progress) provides a classifier that predicts whether or not someone 
 will default on a loan within two years of acquiring it.
 It is designed to be used by a (hypothetical) fintech company that provides an fast response 
 upon whether an loan application is to be rejected or move forwards for further processing.
+The app is containerised via docker, tested using pytest. ML models are built using sklearn pipelines and XGboost. The application uses FastAPI.
 
 
 <h2> Contents </h2>
@@ -17,16 +18,20 @@ The project contents are currently:
 <b> <i> models/ </i> </b> - the trained ML models, in pickle format <br> <br>
 <b> <i> notebooks_and_in_prog/ </i> </b> - notebooks for messier EDA and initial exploratory testing (may delete later) <br> <br>
 <b> <i> app.py </i> </b> - Contains the API (using FastAPI). By running the API and thus activating the server, feature data can be sent via a HTTP post request, and the prediction (for now kept simple with 1 for default, 0 for no default) returned <br> <br>
-<b> <i> config.yaml </i> </b> - parameters used during model training (e.g., random seeds, number of folds in cross validation etc.) <br> <br>
+<b> <i> compose.yml </i> </b> - script use to set up running instance of a docker container, for running code in the project across any system <br> <br>
+<b> <i> config.yml </i> </b> - parameters used during model training (e.g., random seeds, number of folds in cross validation etc.) <br> <br>
+
+<b> <i> dockerfile </i> </b> Used to create the docker image used to run the project in an isolated and reproducible envrionment <br> <br>
 <b> <i> inference.py </i> </b> - contains the code that runs when a HTTP POST request is sent to the app which, for now, simply returns 1 for default, and 0 for no default <br> <br>
 <b> <i> ingest_and_clean_data.py </i> </b> - performs cleaning of data (namely removing bad data - see notebooks_and_in_prog/EDA.ipynb for exploration of this - albeit currently messy) <br> <br>
-<b> <i> requirements.yml </i> </b> - contains python packages required to run the code <br> <br>
+<b> <i> requirements.txt </i> </b> - contains python packages required to run the code <br> <br>
 <b> <i> schemas.py </i> </b> - contains pydantic classes used by app for input feature data and outputted prediction. These ensure robust validation and conversion of data types during the HTTP request <br> <br>
+<b> <i> test_all.py </i> </b> - tests for the pydantic schema and API calls <br> <br>
 <b> <i> train.py </i> </b> - trains, creates, and saves the ML models <br> <br>
 <b> <i> validate.py </i> </b> - Validates the ML models, and computes and logs scoring metrics, using held out data not seen during training <br> <br>
  </ul>
 
-<h2> Implemetation details to note: </h2>
+<h2> Implementation details to note: </h2>
 
 <ul>
 
@@ -59,37 +64,44 @@ A randomSearchCV is used to obtain optimal hyperparameters (see train.py).
 
 <h2> How to use the model and app to get a prediction </h2>
 
-First create an environment containing the required python packages. Navigate to desired location in your terminal of choice and run:
+To guarantee the code/application always works on your machine, run it in a containerised environment via docker. First, <a href=https://docs.docker.com/desktop/> install docker </a> on your system.
+
+Next, open a terminal, navigate to the project directory, and run the following:
 
 ``` 
-conda env create --file requirements.yml
+docker compose up
 ``` 
 
-Then enter the environment using:
+This will first build a docker image from the dockerfile and then run an instance of that image (i.e., a container) on your system. Upon start-up of the container, the FastAPI server is launched.
 
-``` 
-conda env activate creditRiskEnv
-``` 
-
-Now navigate to the project directory on your system. The saved models are already provided, but if one wants to train them, this can be accomplished by running train.py:
-
-``` 
-python train.py
-``` 
-
-To get a prediciton using new data, start the API server by typing:
-
-``` 
-fastapi run .\app.py
-``` 
-
-Once the server is running on your machine, a POST HTTP request can be sent to the server with feature data attached. Upon doing so, a prediction for defaulting is returned in JSON format. 
+Now the server is running on your machine, a POST HTTP request can be sent with feature data attached. Upon doing so, a prediction for defaulting is returned in JSON format. 
 This can all be done via the requests package e.g., using the following:
 
 ``` 
 import requests
-response = requests.post('http://127.0.0.1:8000/', json=feature_dict)
+response = requests.post('http://your_server_address:8000/', json=feature_dict)
 print(response.content) 
 ```
+where <i>feature_dict</i> is a dictionary of features (the keys) and their associated values and 
+<i>your_server_address</i> is the address of the running instance of the server.
+If you're running on your local machine (local host), this will be 127.0.0.1. If running remotely, the address may be different. By using the following command:
 
-where feature_dict is a dictionary of features (the keys) and their associated values.
+```
+docker ps
+```
+
+the details of the running container can be inspected. Your server address will be the numbers on the LHS of the colon in the 'PORTS' parameter.
+
+To run the code that trains the model (and logs output), perform the following command:
+
+```
+docker exec -it credit_risk_container python train.py
+```
+
+which runs the training code inside the container. Other files can be run by replacing train.py with the file of choice.
+
+Once finished with the project, running instances of the container can be dismantled using:
+
+```
+docker compose down
+```
