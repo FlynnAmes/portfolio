@@ -59,10 +59,17 @@ jobs:
         run: docker compose up
 
       - name: wait for server to be ready
-        run: sleep 120
+        run: |
+          for i in {1..30} do;
+             curl http://127.0.0.1:8000/health && break
+             echo 'container not yet built'
+             sleep 5
   # now run test file using pytest
       - name: Run tests using pytest
         run: pytest /tests/test_all.py -m integration
+  # tear down container afterwards
+      - name: tear down container
+      run: docker compose down
 
       
 
