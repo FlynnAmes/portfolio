@@ -6,6 +6,7 @@ from pydantic import ValidationError
 # import app from app.py file
 from app import app
 from fastapi.testclient import TestClient
+import requests
 
 ##########
 # fixtures
@@ -30,10 +31,12 @@ def input_data():
 # define tests
 ######################
 
+@pytest.mark.unit
 def test_pydantic_feature_schema_accepts_good_data(input_data):
     assert features(**input_data)
 
 
+@pytest.mark.unit
 def test_pydantic_feature_schema_rejects_bad_data(input_data):
     # create copy of initial dictionary (pytest unpacks fixture by this point?)
     bad_input_data = input_data.copy()
@@ -43,31 +46,54 @@ def test_pydantic_feature_schema_rejects_bad_data(input_data):
     with pytest.raises(ValidationError):
         features(**bad_input_data)
 
+
+@pytest.mark.unit
 # just accepts one value so no need for fixture yet
 def test_pydantic_prediction_schema_accepts_good_data():
     assert prediction(inference=1)
 
 
+@pytest.mark.unit
 def test_pydantic_prediction_schema_rejects_bad_data():
     # then check whether appropiate error is raised
     with pytest.raises(ValidationError):
         features(inference='a string')
 
 #################
-# tests for API
+# unit tests for API
 #################
 
 # can set up testclient to test app without manually starting server
 client = TestClient(app)
 
+
+@pytest.mark.unit
 def test_get_OK_status_code_good_data(input_data):
     assert client.post('/predict', json=input_data).status_code == 200
 
+
+@pytest.mark.unit
 def test_get_error_status_code_bad_data(input_data):
     # test removing a row
     incomplete_data = input_data.copy().pop('late_60_89')
     # should get error saying that data syntactically correct but could not be processed
     assert client.post('/predict', json=incomplete_data).status_code == 422
+
+##################
+# integration tests for the API
+##################
+
+# test that the API is running after setup with docker
+@pytest.mark.integration
+def test_API_is_running_with_docker():
+    assert requests.get('http://127.0.0.1:8000/health').status_code == 200
+
+
+# test can get a prediction using valid input data when using docker
+@pytest.mark.integration
+def test_get_prediction_with_docker(input_data):
+    assert requests.post('http://127.0.0.1:8000/predict', json=input_data).status_code == 200
+
 
 
 #TODO: test pipelines and models themselves

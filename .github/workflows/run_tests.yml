@@ -8,10 +8,17 @@ on:
           - 'credit_risk_project/**'
 
 jobs: 
-  Test:
 
-# test on linux only for now
+# first run the unit tests - without setting up API
+  unitTests:
+
+# test multiple os
     runs-on: ${{ matrix.os }}
+
+# set default directory to project directory for now
+    defaults:
+      run:
+        working-directory: credit_risk_project
 # define matrix (array of python versions to perform test action on) 
     strategy:
       matrix:
@@ -30,12 +37,33 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r credit_risk_project/requirements.txt
+        pip install -r requirements.txt
 # now run test file using pytest
     - name: Run tests using pytest
-      run: |
-            pytest credit_risk_project/test_all.py
+      run: pytest tests/test_all.py -m unit
 
-    
+# test that works when set up docker
+  IntegrationTests:
+
+  # test on linux only for now
+      runs-on: ubuntu-latest
+      defaults:
+        run:
+          working-directory: credit_risk_project
+      steps:
+  # first clone the repo into the runner's VM
+      - uses: actions/checkout@v5
+
+  # set up the container
+      - name: Start container
+        run: docker compose up
+
+      - name: wait for server to be ready
+        run: sleep 120
+  # now run test file using pytest
+      - name: Run tests using pytest
+        run: pytest /tests/test_all.py -m integration
+
+      
 
 

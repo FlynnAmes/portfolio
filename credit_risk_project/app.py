@@ -8,10 +8,6 @@ from inference import return_inference
 # set up instance of API class
 app = FastAPI()
 
-# set up a test get function to sanity check that the API works
-@app.get('/')
-def get_a_signal():
-    return {'msg': 'hello world!'}
 
 # set up function to process POST request to 
 @app.post('/predict')
@@ -21,4 +17,8 @@ def return_prediction(data: features):
     # return inference, using pydantic class to inform schema
     return prediction(inference=inference)
 
-#TODO: add health and ready endpoints. double check model loading
+
+# health endpoint to check that the API is running
+@app.get('/health')
+def health():
+    return {'status': 'OK'}
