@@ -21,7 +21,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # get constants from yaml
-with open('config.yml') as f:
+with open('../config.yml') as f:
     config = yaml.safe_load(f)
 
 random_seed = config['random_seed']
@@ -29,10 +29,11 @@ spline_deg = config['spline_deg']
 spline_knots = config['spline_knots']
 cv_folds = config['cv_folds']
 cv_scoring_metric = config['cv_scoring_metric']
+lr_max_iter = config['logistic_regression_max_iter']
 
 # load in training data
-X_train = pd.read_pickle('data/processed/X_train.pkl')
-y_train = pd.read_pickle('data/processed/y_train.pkl')
+X_train = pd.read_pickle('../data/processed/X_train.pkl')
+y_train = pd.read_pickle('../data/processed/y_train.pkl')
 
 # create log transformer
 LogTransformer = FunctionTransformer(np.log1p)
@@ -49,11 +50,11 @@ ctLogSomeSplineOpCred = ColumnTransformer([('scale_log', LogTransformer, ['month
 # a spline transform applied. saga solver to allow elastic net regression if needed.
 # Note all are standarised afterwards
 pipeLrAllLog = Pipeline([('scale_log', LogTransformer), ('scale_stand', StandardScaler()), 
-                         ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=1000))])
+                         ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
 pipeLrSomeLog = Pipeline([('scale_log', ctLogScaleSome), ('scale_stand', StandardScaler()), 
-                        ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=1000))])
+                        ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
 pipeLrSomeLogSomeSpline = Pipeline([('scale_log', ctLogSomeSplineOpCred), ('scale_stand', StandardScaler()), 
-                        ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=1000))])
+                        ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
 
 # # and an xgboost - no need for scaling here
 # pipe_xgb = Pipeline(('clf', XGBClassifier()))
@@ -111,7 +112,7 @@ for model in pipe_dictionary.keys():
     print('model fitted', '\n')
 
     # then serialise model as pkl, saving it
-    with open(f'models/{model}.pkl', 'wb') as f:
+    with open(f'../models/{model}.pkl', 'wb') as f:
         pkl.dump(clf, f)
     
     print('model saved', '\n')
@@ -125,7 +126,7 @@ for model in pipe_dictionary.keys():
 
     # get name for run, using current time, as well as model name
     run_name = datetime.now().strftime('%Y%m%d') + f'_{model}'  # could use _%H%m%S on top
-    savedir = 'logs/' + run_name
+    savedir = '../logs/' + run_name
 
     # if dir name does not exist, make it
     if os.path.exists(savedir) is False:

@@ -1,10 +1,10 @@
 """ Tests for input and output schemas as well as API, using pytest """
 
 import pytest
-from schemas import features, prediction
+from src.schemas import features, prediction
 from pydantic import ValidationError
 # import app from app.py file
-from app import app
+from src.app import app
 from fastapi.testclient import TestClient
 import requests
 

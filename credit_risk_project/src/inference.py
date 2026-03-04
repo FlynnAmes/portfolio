@@ -39,7 +39,7 @@ def return_inference(input_features):
         # .difference here returns columns that required but not in input dictionary
         raise KeyError(f'missing required columns in input dictionary: {required_cols.difference(feature_dict)}')
 
-    with open('models/xgb.pkl', 'rb') as f:
+    with open('../models/xgb.pkl', 'rb') as f:
         # now load in the xgboost model
         model = pkl.load(f)
 
@@ -58,3 +58,4 @@ def return_inference(input_features):
 
     # convert prediction to standard integer so that can be serialised by FastAPI
     return int(y_pred)
+

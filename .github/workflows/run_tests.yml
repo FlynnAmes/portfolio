@@ -10,7 +10,7 @@ on:
 jobs: 
 
 # first run the unit tests - without setting up API
-  unitTests:
+  UnitTests:
 
 # test multiple os
     runs-on: ${{ matrix.os }}
@@ -56,7 +56,7 @@ jobs:
 
   # set up the container
       - name: Start container
-        run: docker compose up
+        run: docker compose up -d
 
       - name: wait for server to be ready
         run: |

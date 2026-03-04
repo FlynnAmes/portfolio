@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from schemas import features, prediction
 from inference import return_inference
 
-
 # set up instance of API class
 app = FastAPI()
 

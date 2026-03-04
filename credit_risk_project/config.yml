@@ -3,4 +3,5 @@ train_size: 0.8
 spline_knots: 3
 spline_deg: 3
 cv_folds: 5
+logistic_regression_max_iter: 1000
 cv_scoring_metric: 'recall'

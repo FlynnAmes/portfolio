@@ -12,14 +12,14 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
 # get random seed and training proportion for train test split
-with open('config.yml') as f:
+with open('../config.yml') as f:
     config = yaml.safe_load(f)
 
 random_seed = config['random_seed']
 train_size = config['train_size']
 
 # load in data
-df = pd.read_csv('data/raw/Credit_Risk_Benchmark_Dataset.csv')
+df = pd.read_csv('../data/raw/Credit_Risk_Benchmark_Dataset.csv')
 
 #############
 # Filtering
@@ -53,14 +53,14 @@ y = df_filtered['dlq_2yrs']
 X_train, X_validate, y_train, y_validate = train_test_split(X, y, random_state=random_seed, train_size=train_size)
 
 # save data to pkl files
-with open('data/processed/X_train.pkl', 'wb') as f:
+with open('../data/processed/X_train.pkl', 'wb') as f:
     pkl.dump(X_train, f)
 
-with open('data/processed/y_train.pkl', 'wb') as f:
+with open('../data/processed/y_train.pkl', 'wb') as f:
     pkl.dump(y_train, f)
 
-with open('data/processed/X_validate.pkl', 'wb') as f:
+with open('../data/processed/X_validate.pkl', 'wb') as f:
     pkl.dump(X_validate, f)
 
-with open('data/processed/y_validate.pkl', 'wb') as f:
+with open('../data/processed/y_validate.pkl', 'wb') as f:
     pkl.dump(y_validate, f)

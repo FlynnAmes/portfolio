@@ -17,4 +17,4 @@ COPY . .
 
 # start the application inside the container
 # tell uvicorn to use port 8000 in container
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
