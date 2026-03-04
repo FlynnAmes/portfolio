@@ -70,8 +70,6 @@ jobs:
         run: pytest /tests/test_all.py -m integration
   # tear down container afterwards
       - name: tear down container
-      run: docker compose down
-
-      
+        run: docker compose down   
 
 
