@@ -12,7 +12,7 @@ def return_inference(input_features, xgb_model):
      simple 1 or 0 prediction for whether for delinquency, which the 
       'app' will then be able to use to decide whether to quick-accept/reject.
        
-        other argument is the XGB model """
+      other argument is the XGB model object """
     
     #TODO: should convert type of incoming data to numpy etc. (because will be in standrad python types 
     # such as float and int initially)?

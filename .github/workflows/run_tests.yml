@@ -57,9 +57,6 @@ jobs:
   # set up the container
       - name: Start container
         run: docker compose up -d
-  # check logs of container to see if uvicorn started
-      - name: check container logs
-        run: docker logs credit_risk_container
   # loop to wait for server to be ready
       - name: wait for server to be ready
         run: |
@@ -67,6 +64,8 @@ jobs:
              curl http://127.0.0.1:8000/health && break
              echo 'check for containers'
              docker ps -a
+             echo 'docker logs'
+             docker logs credit_risk_container
              sleep 30
           done
   # now run test file using pytest
