@@ -70,7 +70,7 @@ jobs:
           done
   # now run test file using pytest
       - name: Run tests using pytest
-        run: docker exec -it credit_risk_container pytest tests/test_all.py -m integration
+        run: docker exec -i credit_risk_container pytest tests/test_all.py -m integration
   # tear down container afterwards
       - name: tear down container
         run: docker compose down   
