@@ -57,7 +57,10 @@ jobs:
   # set up the container
       - name: Start container
         run: docker compose up -d
-
+  # check logs of container to see if uvicorn started
+      - name: check container logs
+        run: docker logs credit_risk_container
+  # loop to wait for server to be ready
       - name: wait for server to be ready
         run: |
           for i in {1..10}; do
@@ -67,7 +70,7 @@ jobs:
           done
   # now run test file using pytest
       - name: Run tests using pytest
-        run: pytest /tests/test_all.py -m integration
+        run: pytest tests/test_all.py -m integration
   # tear down container afterwards
       - name: tear down container
         run: docker compose down   

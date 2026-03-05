@@ -60,7 +60,6 @@ def compute_and_log_inference_time(clf, X_validate, model_name, number=5):
         json.dump(inference_file_data, f, indent=4)
 
 
-
 # load in validation data
 with open(DATA_PATH / 'processed' / 'X_validate.pkl', 'rb') as f:
     X_validate = pkl.load(f)
