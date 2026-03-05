@@ -105,3 +105,7 @@ Once finished with the project, running instances of the container can be disman
 ```
 docker compose down
 ```
+
+<h2> Notes on running without docker </h2>
+
+If running without docker, the project directory may need to be added to your python path otherwise relative imports may fail.

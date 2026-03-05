@@ -106,7 +106,7 @@ def train_models():
     pipeLrSomeLogSomeSpline = Pipeline([('scale_log', ctLogSomeSplineOpCred), ('scale_stand', StandardScaler()), 
                             ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
     # and an xgboost - no need for scaling here
-    pipe_xgb = Pipeline([('clf', XGBClassifier())])
+    pipe_xgb = Pipeline([('clf', XGBClassifier(random_seed=random_seed))])
 
     #############
     # parameter dictionaries

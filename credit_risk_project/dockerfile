@@ -15,6 +15,9 @@ RUN pip install -r requirements.txt
 # now copy remaining files to working directory
 COPY . .
 
+# set python path explictly to the workdir
+ENV PYTHONPATH=/app
+
 # start the application inside the container
 # tell uvicorn to use port 8000 in container
 CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8000"]
