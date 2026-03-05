@@ -1,12 +1,11 @@
 """ Ingest and filter out bad data, save seperate validation and training data """
 
 import yaml
-import os
 import pandas as pd
 from scipy.stats import zscore
 from sklearn.model_selection import train_test_split
 import pickle as pkl
-from paths import LOGS_PATH, MODELS_PATH, CONFIG_PATH, DATA_PATH
+from src.paths import CONFIG_PATH, DATA_PATH
 
 # get random seed and training proportion for train test split
 with open(CONFIG_PATH) as f:
