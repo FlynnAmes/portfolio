@@ -57,6 +57,9 @@ jobs:
   # set up the container
       - name: Start container
         run: docker compose up -d
+  # list all container instances
+      - name: check container instances
+        run: docker ps -a
   # check logs of container to see if uvicorn started
       - name: check container logs
         run: docker logs credit_risk_container

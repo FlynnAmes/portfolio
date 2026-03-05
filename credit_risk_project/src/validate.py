@@ -12,6 +12,10 @@ from datetime import datetime
 import json
 from paths import LOGS_PATH, MODELS_PATH, DATA_PATH
 
+##########
+# functions
+##########
+
 
 def log_validation_params(y_pred, y_validate, model_name):
     """ logs scoring metrics for ML model by running classification report. Uses 
@@ -60,40 +64,56 @@ def compute_and_log_inference_time(clf, X_validate, model_name, number=5):
         json.dump(inference_file_data, f, indent=4)
 
 
-# load in validation data
-with open(DATA_PATH / 'processed' / 'X_validate.pkl', 'rb') as f:
-    X_validate = pkl.load(f)
-with open(DATA_PATH / 'processed' / 'y_validate.pkl', 'rb') as f:
-    y_validate = pkl.load(f)
+def validate_models():
+    """ main function for validating the models """
+    ##############
+    # data and files
+    ##############
 
-# create an initial empty JSON file for the inference times of all models
-Path(LOGS_PATH / 'inference_times.json').touch()
+    # load in validation data
+    with open(DATA_PATH / 'processed' / 'X_validate.pkl', 'rb') as f:
+        X_validate = pkl.load(f)
+    with open(DATA_PATH / 'processed' / 'y_validate.pkl', 'rb') as f:
+        y_validate = pkl.load(f)
 
-# add braces so that can append to file
-with open(LOGS_PATH / 'inference_times.json', 'w') as f:
-    f.write('{}')
+    # create an initial empty JSON file for the inference times of all models
+    Path(LOGS_PATH / 'inference_times.json').touch()
 
-# loop through all models
-for i, model_path in enumerate(glob.glob(str(MODELS_PATH / '*.pkl'))):
- 
-    with open(model_path, 'rb') as f:
-        # get model
-        model = pkl.load(f)
-        # and its name (stem gives name of end of path, omitting extension)
-        model_name = Path(model_path).stem
-    
-    print(f'model {model_name} loaded \n')
+    # add braces so that can append to file
+    with open(LOGS_PATH / 'inference_times.json', 'w') as f:
+        f.write('{}')
+
 
     ##########
-    # call predict method for model to get predicted delinquency
-    y_pred = model.predict(X_validate)
+    # main validation loop
+    ##########
 
-    print(f'prediction completed', '\n')
-
-    # log scoring metrics
-    log_validation_params(y_pred=y_pred, y_validate=y_validate, model_name=model_name)
+    # loop through all models
+    for i, model_path in enumerate(glob.glob(str(MODELS_PATH / '*.pkl'))):
     
-    # compute and log inference times for model
-    compute_and_log_inference_time(clf=model, X_validate=X_validate)
+        with open(model_path, 'rb') as f:
+            # get model
+            model = pkl.load(f)
+            # and its name (stem gives name of end of path, omitting extension)
+            model_name = Path(model_path).stem
+        
+        print(f'model {model_name} loaded \n')
 
-    print('params logged', '\n')
+        ##########
+        # call predict method for model to get predicted delinquency
+        y_pred = model.predict(X_validate)
+
+        print(f'prediction completed', '\n')
+
+        # log scoring metrics
+        log_validation_params(y_pred=y_pred, y_validate=y_validate, model_name=model_name)
+        
+        # compute and log inference times for model
+        compute_and_log_inference_time(clf=model, X_validate=X_validate, model_name=model_name)
+
+        print('params logged', '\n')
+
+
+# if script run, then validate the models!
+if __name__ == '__main__':
+    validate_models()
