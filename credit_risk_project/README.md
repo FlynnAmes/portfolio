@@ -2,34 +2,35 @@
 
 This project (polishing/refactoring in progress) provides a classifier that predicts whether or not someone will default on a loan within two years of acquiring it.
 It is designed to be used by a (hypothetical) fintech company that provides a fast response 
-to a loan application. For now the model is provides a simple 'accept or reject' output (where 1 indicates a possible delinquency and thus rejection).
-The app is containerised via docker, tested using pytest. ML models are built using sklearn pipelines and XGboost. The application uses FastAPI.
+to a loan application. For now the model is provides a simple 'accept or reject' output (where 1 indicates a possible delinquency and thus rejection). <br> <br>
+The app is containerised via docker and tested using pytest (automated on push to repo via GitHub actions). Data is preprocessed with Pandas and NumPy. ML models are built using sklearn pipelines and XGboost. The application and its endpoints are configured using FastAPI.
 
 
-<h2> Contents </h2>
+<h2> Contents list </h2>
 
-The project contents are currently:
+The project root directory currently contains:
 
 <ul>
 
-<b> <i> data/ </i> </b> - raw data (see below for source) used to train model, as well as processed (i.e., cleaned) data used for model training and validation <br> <br>
-<b> <i> logs/ </i> </b> - upon running the code, contains logged scoring metrics for each trained model, along with cross-validation results and inference times (the latter computed during validation) <br> <br>
-<b> <i> models/ </i> </b> - the trained ML models in pickle format <br> <br>
-<b> <i> notebooks_and_in_prog/ </i> </b> - notebooks for messier EDA and initial exploratory testing (note these are messy and currently lack much expalantion, will either delete or refine later) <br> <br>
-<b> <i> src/ </i> </b> Python scripts used for creating ML models and deploying the application. Includes initial cleaning of data, training of ML models, validation, inference, paths, schemas (pydantic classes for input and output data) and the application file itself <br> <br>
-<b> <i> tests/ </i> </b> contains both unit and integration tests (using pytest) <br> <br>
-<b> <i> compose.yml </i> </b> - script that sets up running instance of a docker container, for running the code across any system <br> <br>
-<b> <i> config.yml </i> </b> - parameters used during model training (e.g., random seeds, number of folds in cross validation etc.) <br> <br>
-<b> <i> dockerfile </i> </b> - used to create the docker image for running the project in an isolated and reproducible envrionment <br> <br>
-<b> <i> pytest.toml </i> </b> - specifies custom 'marks' for pytests <br> <br>
-<b> <i> requirements.txt </i> </b> - contains python packages required to run the code <br> <br>
+- <b> <i> data/ </i> </b> - raw data (see below for source) used to train model, as well as processed (i.e., cleaned) data used for model training and validation. <br>
+- <b> <i> logs/ </i> </b> - upon running the code, contains logged scoring metrics for each trained model, along with cross-validation results and inference times (the latter computed during validation).<br>
+- <b> <i> models/ </i> </b> - the trained ML models in pickle format. <br>
+- <b> <i> notebooks_and_in_prog/ </i> </b> - notebooks for messier EDA and initial exploratory testing (note these are messy and currently lack much expalantion, will either delete or refine later). <br>
+- <b> <i> src/ </i> </b> - Python scripts used for creating ML models and deploying the application. Includes initial cleaning of data, training of ML models, validation, inference, paths, schemas (pydantic classes for input and output data) and the application file itself. <br>
+- <b> <i> tests/ </i> </b> - contains both unit and integration tests. <br>
+- <b> <i> compose.yml </i> </b> - script that sets up running instance of a docker container, for running the code across any system. <br>
+- <b> <i> config.yml </i> </b> - parameters used during model training (e.g., random seeds, number of folds in cross validation etc.). <br>
+- <b> <i> dockerfile </i> </b> - used to create the docker image for running the project in an isolated and reproducible envrionment. <br>
+- <b> <i> pyproject.toml </i> </b> - specifies custom 'marks' for pytests, and also build options (where building project as a package locally). <br>
+- <b> <i> requirements.txt </i> </b> - contains python packages required to run the code. <br>
+
+</ul>
 
 <h2> Implementation details to note: </h2>
 
 <ul>
-
-<li> The model performs a single inference (rather than batch inference). This is to simulate an instant response to the loan application (e.g., on a fintech app). Therefore only one value must be given for each feature </li>
-<li> 10 input features are required. Their names and types can be found in src/schemas.py
+<li> The model performs a single inference (rather than batch inference). This is to simulate an instant response to the loan application (e.g., on a fintech app). Therefore only one value must be given for each feature. </li>
+<li> 10 input features are required. Their names and types can be found in src/schemas.py. </li>
 
 </ul>
 
@@ -94,8 +95,6 @@ docker compose down
 
 <h2> Notes on running without docker </h2>
 
-If running without docker, the project directory may need to be added to your python path otherwise relative imports may fail. 
-
 For best results without docker, one should create a seperate python environment. This project uses Python version 3.11. One can create a conda environment specifying the python version using the following command:
 
 ``` 
@@ -114,7 +113,19 @@ Then navigate into the project directory and install the required python depende
 pip install -r requirements.txt
 ```
 
-Python scripts (e.g., model training) can then be run directly in the the terminal or in the IDE of choice. The application server can be initiated with the following command from the project directory:
+If running without docker, the project directory may need to be added to your python path otherwise relative imports may fail. This can be done manually, but a cleaner option is to install the project as a module:
+
+```
+pip install -e .
+```
+
+Files can then be run by running them as modules in the terminal, e.g., with the following command:
+
+```
+python -m src.train
+```
+
+which will run the training script (replace train with the file of choice) to train the ML models. The application server can be initiated with the following command:
 
 ```
 uvicorn src.app:app
