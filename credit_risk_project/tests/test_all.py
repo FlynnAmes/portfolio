@@ -3,7 +3,6 @@
 import pytest
 from src.schemas import features, prediction
 from pydantic import ValidationError
-# import app from app.py file
 from src.app import app
 from fastapi.testclient import TestClient
 import requests
@@ -94,6 +93,3 @@ def test_API_is_running_with_docker():
 def test_get_prediction_with_docker(input_data):
     assert requests.post('http://127.0.0.1:8000/predict', json=input_data).status_code == 200
 
-
-
-#TODO: test pipelines and models themselves

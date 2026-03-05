@@ -60,13 +60,13 @@ jobs:
   # loop to wait for server to be ready
       - name: wait for server to be ready
         run: |
-          for i in {1..10}; do
+          for i in {1..30}; do
              curl http://127.0.0.1:8000/health && break
              echo 'check for containers'
              docker ps -a
              echo 'docker logs'
              docker logs credit_risk_container
-             sleep 30
+             sleep 5
           done
   # now run test file using pytest
       - name: Run tests using pytest
