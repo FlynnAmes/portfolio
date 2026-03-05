@@ -3,16 +3,22 @@
 from fastapi import FastAPI
 from schemas import features, prediction
 from inference import return_inference
+from paths import MODELS_PATH
+import pickle as pkl
 
 # set up instance of API class
 app = FastAPI()
+
+# load in model as a global variable
+with open(MODELS_PATH / 'xgb.pkl', 'rb') as f:
+        xgb_model = pkl.load(f)
 
 
 # set up function to process POST request to 
 @app.post('/predict')
 def return_prediction(data: features):
     # run ML model
-    inference = return_inference(data)
+    inference = return_inference(data, xgb_model)
     # return inference, using pydantic class to inform schema
     return prediction(inference=inference)
 
