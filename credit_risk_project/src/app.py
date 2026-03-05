@@ -1,9 +1,9 @@
 """ API that takes data and returns simple true or false prediction for default or not """
 
 from fastapi import FastAPI
-from schemas import features, prediction
-from inference import return_inference
-from paths import MODELS_PATH
+from src.schemas import features, prediction
+from src.inference import return_inference
+from src.paths import MODELS_PATH
 import pickle as pkl
 
 # set up instance of API class

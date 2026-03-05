@@ -4,7 +4,7 @@ For now just returns the binary prediction about whether delinquent or not """
 
 import pandas as pd
 import numpy as np
-from schemas import features
+from src.schemas import features
 
 
 def return_inference(input_features, xgb_model):
@@ -14,8 +14,7 @@ def return_inference(input_features, xgb_model):
        
       other argument is the XGB model object """
     
-    #TODO: should convert type of incoming data to numpy etc. (because will be in standrad python types 
-    # such as float and int initially)?
+    #NOTE: if doing batch inference may want to convert to numpy etc.?
 
     # test whether or not input actually is pydantic baseModel feature object
     if not isinstance(input_features, features):

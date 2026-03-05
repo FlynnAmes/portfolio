@@ -6,11 +6,10 @@ from pathlib import Path
 import glob
 import pickle as pkl
 from sklearn.metrics import classification_report
-import pandas as pd
 import timeit
 from datetime import datetime
 import json
-from paths import LOGS_PATH, MODELS_PATH, DATA_PATH
+from src.paths import LOGS_PATH, MODELS_PATH, DATA_PATH
 
 ##########
 # functions

@@ -15,7 +15,7 @@ import pickle as pkl
 import yaml
 import json
 from datetime import datetime
-from paths import LOGS_PATH, MODELS_PATH, CONFIG_PATH, DATA_PATH
+from src.paths import LOGS_PATH, MODELS_PATH, CONFIG_PATH, DATA_PATH
 
 ###########
 # functions
