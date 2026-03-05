@@ -38,9 +38,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-# now run test file using pytest
+# now run test file using pytest. 
     - name: Run tests using pytest
-      run: pytest tests/test_all.py -m unit
+      run: python -m pytest tests/test_all.py -m unit
 
 # test that works when set up docker
   IntegrationTests:
