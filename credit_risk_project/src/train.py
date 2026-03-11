@@ -9,8 +9,7 @@ from sklearn.preprocessing import StandardScaler, FunctionTransformer, SplineTra
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import RandomizedSearchCV, TunedThresholdClassifierCV
-from sklearn.metrics import fbeta_score, make_scorer
+from sklearn.model_selection import RandomizedSearchCV
 from xgboost import XGBClassifier
 import pickle as pkl
 import yaml

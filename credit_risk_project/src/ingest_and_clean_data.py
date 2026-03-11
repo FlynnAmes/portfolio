@@ -19,7 +19,6 @@ def ingest_and_clean_data(config_path):
     random_seed = config['random_seed']
     train_size = config['train_size']
     train_prop_no_tune = config['train_prop_no_tune']
-    population_pos_class_rate = config['population_pos_class_rate']
 
     # load in data
     df = pd.read_csv(DATA_PATH / 'raw' / 'Credit_Risk_Benchmark_Dataset.csv')
@@ -52,12 +51,11 @@ def ingest_and_clean_data(config_path):
     X = df_filtered.drop(columns=['dlq_2yrs'])
     y = df_filtered['dlq_2yrs']
 
-    #TODO: three way split for data, so that get a small holdout dataset for the tuning of the decision threshold
     # Do initial split, to seperate into training data, as well as validation data
     X_train_all, X_validate, y_train_all, y_validate = train_test_split(X, y, random_state=random_seed, train_size=train_size)
 
     # and split training data, to have small subset remainng for decision threshold tuning
-    X_train, X_tune, y_train, y_tune = train_test_split(X, y, random_state=random_seed, train_size=train_prop_no_tune)
+    X_train, X_tune, y_train, y_tune = train_test_split(X_train_all, y_train_all, random_state=random_seed, train_size=train_prop_no_tune)
 
 
     # compute proportion of training, tuning, and validation samples that is positive class
