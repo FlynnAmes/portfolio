@@ -2,3 +2,6 @@ data/raw/
 __pycache__/
 /logs
 *.egg-info
+plots/
+
+# for now ignore all pretuned models as well as logistic regression models

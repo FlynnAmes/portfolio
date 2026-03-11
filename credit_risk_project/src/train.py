@@ -9,7 +9,8 @@ from sklearn.preprocessing import StandardScaler, FunctionTransformer, SplineTra
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV, TunedThresholdClassifierCV
+from sklearn.metrics import fbeta_score, make_scorer
 from xgboost import XGBClassifier
 import pickle as pkl
 import yaml
@@ -21,15 +22,16 @@ from src.paths import LOGS_PATH, MODELS_PATH, CONFIG_PATH, DATA_PATH
 # functions
 ###########
 
-def log_training_params(clf, model_name):
+def log_training_params(clf, model_name: str):
     """ Logs hyperparameters of sklearn estimators, as well as
       cross validation results obtained during training, and feature names for the XGboost
       Logs are saved using the current date, along with a name given to the model, to 
       the logs/ directory
 
-      clf: the trained model pipeline RandomSearchCV object
+      clf: the trained and tuned model pipeline RandomSearchCV object
       model_name: the name of the model (string), used for saving """
     
+    # get hyperparameters
     pipeline_params = clf.best_estimator_.get_params()
 
     # then convert to string where not simple python object, so can serialise into json
@@ -37,18 +39,17 @@ def log_training_params(clf, model_name):
     pipeline_params_reformat = {k: str(var) if not isinstance(var, (int, float, str, bool, type(None))) 
                                 else var for k, var in pipeline_params.items()}
 
-    # get name for run, using current time, as well as model name
-    run_name = datetime.now().strftime('%Y%m%d') + f'_{model_name}'  # could use _%H%m%S on top
-    savedir = LOGS_PATH / run_name
+    # For now different versions distinusguished using datetime
+    savedir = LOGS_PATH / model_name / datetime.now().strftime('%Y%m%d')
 
     # if dir name does not exist, make it
     os.makedirs(savedir, exist_ok=True)
 
-    # and finally dump to JSON
+    # dump to JSON
     with open(savedir / 'hyperparams.json', 'w') as f:
         json.dump(pipeline_params_reformat, f, indent=4)
-
-    # also dump to JSON the cv results (to check if large variation in this)
+    
+    # also dump the random search cv results - to csv for now
     pd.DataFrame(data=clf.cv_results_).to_csv(savedir / 'cv_results.csv')
 
 
@@ -56,7 +57,11 @@ def save_model(clf, model_name):
     """ saves the ML model to the models directory in pickle format, using model name (along 
      with MODELS PATH defined in paths.py) """
 
-    with open(MODELS_PATH / (model_name + '.pkl'), 'wb') as f:
+    # create directory if doesn't already exists
+    os.makedirs(MODELS_PATH / 'pretuning', exist_ok=True)
+
+    # and save the model to this directory
+    with open(MODELS_PATH / 'pretuning' / (model_name + '.pkl'), 'wb') as f:
         pkl.dump(clf, f)
 
 
@@ -120,7 +125,6 @@ def train_models(config_path):
         'clf__C': stats.loguniform(1e-1, 1e1)  # log unform because order of magnitudes matter here
     }
 
-    #TODO: test early stopping at some point
     params_dict_xgb = {'clf__learning_rate': stats.loguniform(0.01, 1), 
                             'clf__n_estimators': np.linspace(100, 2000, 20, dtype=np.int64),
                             'clf__max_depth': np.linspace(2, 20, 10, dtype=np.int64), 
@@ -153,7 +157,6 @@ def train_models(config_path):
     for model in pipe_dictionary.keys():
 
         # set up randomised grid search, with corresponding pipeline and params dict
-
         clf = RandomizedSearchCV(pipe_dictionary[model]['pipeline'], pipe_dictionary[model]['params_dict'], 
                                 cv=cv_folds, scoring=cv_scoring_metric, random_state=random_seed)
         

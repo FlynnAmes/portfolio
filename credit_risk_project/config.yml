@@ -1,7 +1,12 @@
 random_seed: 42
 train_size: 0.8
+train_prop_no_tune: 0.9
 spline_knots: 3
 spline_deg: 3
 cv_folds: 5
 logistic_regression_max_iter: 2000
-cv_scoring_metric: 'recall'
+cv_scoring_metric: 'average_precision'
+recall_weightings:
+  lenient: 0.75
+  standard: 1
+  aggressive: 1.5

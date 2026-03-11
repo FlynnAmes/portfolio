@@ -37,7 +37,13 @@ The project root directory currently contains:
 
 <h2> The data </h2>
 
-The model is trained on a credit risk dataset linked <a href=https://www.kaggle.com/datasets/adilshamim8/credit-risk-benchmark-dataset> here </a>
+The model is trained on a credit risk dataset linked <a href=https://www.kaggle.com/datasets/adilshamim8/credit-risk-benchmark-dataset> here </a>. Note that the dataset has an artifical class balance (50% defaulting, likely at least 10 times larger than the proportion of defaults typically observed in a bredit risk population).
+The probabilities of default outputted by the model should therefore not be interpreted as real world default probabilities (the probabilities would be expected to be much lower using real world data).
+While a correction can be made to probabilities to account for differences between the sammple dataset and 
+population, robust calibration of these probabilites would require a large dataset (because limited prevalence of positive classifications would result in very large confidence intervals at larger probabilities).
+
+The brier scores and reliability diagrams therefore are computed assuming that the population encountered during 
+inference has the same class balance as that used in training.
 
 
 <h2> Model details </h2>
@@ -45,10 +51,14 @@ The model is trained on a credit risk dataset linked <a href=https://www.kaggle.
 The algorithm employed in the inference model is an XGboost classifier.
 Logistic regression models are also trained and their performance evaluated.
 
-Recall of positive classifications (i.e., the proportion of people who defaulted who are correctly 
-classified as doing so) is the primary metric used to choose the ML algorithm. This is because a false negative (i.e., not catching a potential delinquency) is deemed more costly than false positives.
+Average precision of positive classifications is the scoring metric used to find optimal hyperparameters via 
+a random search.
+The model decision (probability) threshold is then tuned using an f_beta score. #
+By default, recall is weighted more than precision. This is because a false negative (i.e., not catching a potential delinquency) is deemed more costly than false positives.
+This weighting can be altered for when the business preferences change regarding the importance of false negatives vs false positives, and the model retuned.
 
-Model inference time is also considered. Logistic regression outperforms XGboost here, but the performance of either algorithm is deemed good enough for the context (singular inferences obtainable in under a second).
+
+Model inference time is considered. Logistic regression outperforms XGboost here, but the performance of either algorithm is deemed good enough for the context (singular inferences obtainable in under a second).
 Logistic regression interpretability is found to degrade with attempts to better tailor it 
 to the non-linear decision boundary (Improved recall of positive classifications is accompanied by a reversal-in-sign in relationship between features and the log-of-odds of defaulting). Given these results, XGboost is chosen.
 
