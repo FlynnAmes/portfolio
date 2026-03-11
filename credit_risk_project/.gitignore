@@ -5,3 +5,5 @@ __pycache__/
 plots/
 
 # for now ignore all pretuned models as well as logistic regression models
+models/pretuning/
+models/tuned/lr*

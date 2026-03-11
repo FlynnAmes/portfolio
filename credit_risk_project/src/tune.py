@@ -42,10 +42,15 @@ def log_tuning_results(model_object, model_name: str):
  
 
 
-def save_model(model_object, model_name: str):
-    """ save tuned model to pkl format, given name of model (string)"""
+def save_model(model_object, model_name: str, scoring_name: str):
+    """ save tuned model to pkl format, given name of model (string) and scoring (e.g., lenient) """
 
-    with open(MODELS_PATH / 'tuned' / (model_name + '.pkl'), 'wb') as f:
+    # create save directory for tuned models if not already exist
+    savedir = MODELS_PATH / 'tuned' / model_name
+    os.makedirs(savedir, exist_ok=True)
+
+    # for now overwrite models rather than save every instance
+    with open(savedir / f'{scoring_name}.pkl', 'wb') as f:
             pkl.dump(model_object, f)
 
 
@@ -63,10 +68,6 @@ def tune_models(config_path):
         # extract dictionary containing weightings for recall to use in tuning models
         r_weightings = yaml.safe_load(f)['recall_weightings']
 
-    # create save directory for tuned models if not already exist
-    os.makedirs(MODELS_PATH / 'tuned', exist_ok=True)
-
-
     # load in model objects
     for model_path in glob(str(MODELS_PATH / 'pretuning' / '*.pkl')):
 
@@ -78,7 +79,7 @@ def tune_models(config_path):
         for i in r_weightings.keys():
             
             # create model name using name of untuned model and key from r_weightings
-            model_name = Path(model_path).stem + '_' + i
+            model_name = str(Path(model_path).stem)
 
             # compute f_beta score using specified weighting
             f_beta_scorer = make_scorer(fbeta_score, beta=r_weightings[i])
@@ -91,7 +92,7 @@ def tune_models(config_path):
             print('\n model tuned \n')
 
             # now save the tuned model
-            save_model(model_object=clf_tuned,  model_name=model_name)
+            save_model(model_object=clf_tuned,  model_name=model_name, scoring_name=i)
 
             print('\n model saved \n')
 
