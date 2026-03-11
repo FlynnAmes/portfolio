@@ -3,30 +3,21 @@
 
 import os
 from pathlib import Path
-import glob
-import yaml
+from glob import glob
 import json
 import pickle as pkl
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, brier_score_loss
 import timeit
 from datetime import datetime
 import json
 from src.paths import LOGS_PATH, MODELS_PATH, DATA_PATH
-
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.calibration import CalibrationDisplay, calibration_curve
-from sklearn.metrics import brier_score_loss
-import seaborn as sns
-from src.paths import BASE_PATH, CONFIG_PATH, LOGS_PATH
 
 ##########
 # functions
 ##########
 
 
-def log_validation_params(y_pred, y_validate, model_name, y_pred_proba=None):
+def log_validation_params(y_pred, y_validate, model_name: str, scoring_name: str, y_pred_proba=None):
     """ logs scoring metrics for ML model by running classification report. Uses 
      current time and model name as dir name for the logs. 
      
@@ -42,7 +33,7 @@ def log_validation_params(y_pred, y_validate, model_name, y_pred_proba=None):
 
     # create save directory for logs if not already created. Fow now using day to 
     # distinguish between versions/experiments
-    savedir = LOGS_PATH / model_name / datetime.now().strftime('%Y%m%d')
+    savedir = LOGS_PATH / model_name / scoring_name / datetime.now().strftime('%Y%m%d') / 'validation'
 
     # if dir name does not exist, make it
     os.makedirs(savedir, exist_ok=True)
@@ -61,7 +52,7 @@ def log_validation_params(y_pred, y_validate, model_name, y_pred_proba=None):
             json.dump(brier_score_dict, f, indent=4)
 
 
-def compute_and_log_inference_time(clf, X_validate, model_name, number=5):
+def compute_and_log_inference_time(clf, X_validate, model_name: str, scoring_name: str, number=5):
     """ computes inference time for classifer model and saved to 
      json file (that must be defined in advance)
     
@@ -78,14 +69,14 @@ def compute_and_log_inference_time(clf, X_validate, model_name, number=5):
         inference_file_data = json.load(f)
     
     # assign value
-    inference_file_data[f'{model_name}'] = inference_time
+    inference_file_data[model_name + '_' + scoring_name] = inference_time
 
     # and save (need to seperate owing to need for read and write permissions)
     with open(LOGS_PATH / 'inference_times.json', 'w') as f:
         json.dump(inference_file_data, f, indent=4)
 
 
-def validate_models(config_path):
+def validate_models():
     """ main function for validating the models """
 
     ##############
@@ -99,6 +90,7 @@ def validate_models(config_path):
         y_validate = pkl.load(f)
 
     # create an initial empty JSON file for the inference times of all models
+    os.makedirs(LOGS_PATH, exist_ok=True)
     Path(LOGS_PATH / 'inference_times.json').touch()
 
     # add braces so that can append to file
@@ -110,13 +102,15 @@ def validate_models(config_path):
     ##########
 
     # loop through all models
-    for i, model_path in enumerate(glob.glob(str(MODELS_PATH / 'tuned' / '*.pkl'))):
+    for model_path in glob(str(MODELS_PATH / 'tuned' / '*' / '*.pkl')):
         
         with open(model_path, 'rb') as f:
             # get model
             model = pkl.load(f)
-            # and its name (stem gives name of end of path, omitting extension)
-            model_name = Path(model_path).stem
+            # and its name
+            model_name = str(Path(model_path).parent.stem)
+            # and scoring name 
+            scoring_name = str(Path(model_path).stem)
         
         print(f'model {model_name} loaded \n')
 
@@ -130,16 +124,16 @@ def validate_models(config_path):
         print(f'prediction completed', '\n')
 
         # log scoring metrics
-        log_validation_params(y_pred=y_pred, y_validate=y_validate, model_name=model_name, 
-                              y_pred_proba=pred_proba_default)
+        log_validation_params(y_pred=y_pred, y_validate=y_validate, model_name=model_name,
+                               scoring_name=scoring_name, y_pred_proba=pred_proba_default)
         
         # compute and log inference times for model
-        compute_and_log_inference_time(clf=model, X_validate=X_validate, model_name=model_name)
+        compute_and_log_inference_time(clf=model, X_validate=X_validate, model_name=model_name, 
+                                       scoring_name=scoring_name)
 
         print('params logged', '\n')
 
 
 # if script run, then validate the models!
 if __name__ == '__main__':
-    config_path = CONFIG_PATH
-    validate_models(config_path=config_path)
+    validate_models()

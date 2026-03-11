@@ -14,13 +14,13 @@ from datetime import datetime
 import numpy as np
 
 
-def log_tuning_results(model_object, model_name: str):
+def log_tuning_results(model_object, model_name: str , scoring_name: str):
     """ log the decision probability threshold of the tuned model object, as well as 
     the results of the tuning process. Save to dircteory marked by date. """
 
     # create save directory for logs if not already created. Fow now using day to 
     # distinguish between versions/experiments
-    savedir = LOGS_PATH / model_name / datetime.now().strftime('%Y%m%D')
+    savedir = LOGS_PATH / model_name / scoring_name / datetime.now().strftime('%Y%m%d') / 'tuning'
     os.makedirs(savedir, exist_ok=True)
 
     # create dictionary with decision threshold and its performance. convert to float to guarantee
@@ -65,8 +65,11 @@ def tune_models(config_path):
 
     # now load in config params
     with open(config_path, 'r') as f:
-        # extract dictionary containing weightings for recall to use in tuning models
-        r_weightings = yaml.safe_load(f)['recall_weightings']
+        config = yaml.safe_load(f)
+    
+    # extract weightings for f_beta scoring and random seed for tuning (latter for prudence)
+    r_weightings = config['recall_weightings']
+    random_seed = config['random_seed']
 
     # load in model objects
     for model_path in glob(str(MODELS_PATH / 'pretuning' / '*.pkl')):
@@ -76,28 +79,29 @@ def tune_models(config_path):
             pretuned_model = pkl.load(f)
 
         # now loop over all recall weightings to create multiple tuned instances of the model
-        for i in r_weightings.keys():
+        for r_weight in r_weightings.keys():
             
             # create model name using name of untuned model and key from r_weightings
             model_name = str(Path(model_path).stem)
 
             # compute f_beta score using specified weighting
-            f_beta_scorer = make_scorer(fbeta_score, beta=r_weightings[i])
+            f_beta_scorer = make_scorer(fbeta_score, beta=r_weightings[r_weight])
 
             # perform tuning of model object using f beta score, given tuning data not seen during training
             # note that no refitting of the model is performed here
             clf_tuned = TunedThresholdClassifierCV(pretuned_model, scoring=f_beta_scorer, 
                                                             cv='prefit', refit=False, 
-                                                            store_cv_results=True).fit(X_tune, y_tune)
+                                                            store_cv_results=True, 
+                                                            random_state=random_seed).fit(X_tune, y_tune)
             print('\n model tuned \n')
 
             # now save the tuned model
-            save_model(model_object=clf_tuned,  model_name=model_name, scoring_name=i)
+            save_model(model_object=clf_tuned, model_name=model_name, scoring_name=r_weight)
 
             print('\n model saved \n')
 
             # log tuning parameters (new decision trheshold + results from tuning tests)
-            log_tuning_results(model_object=clf_tuned, model_name=model_name)
+            log_tuning_results(model_object=clf_tuned, model_name=model_name, scoring_name=r_weight)
 
             print('\n tuning params logged \n')
         

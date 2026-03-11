@@ -40,7 +40,7 @@ def log_training_params(clf, model_name: str):
                                 else var for k, var in pipeline_params.items()}
 
     # For now different versions distinusguished using datetime
-    savedir = LOGS_PATH / model_name / datetime.now().strftime('%Y%m%d')
+    savedir = LOGS_PATH / model_name / 'pretuning' / datetime.now().strftime('%Y%m%d')
 
     # if dir name does not exist, make it
     os.makedirs(savedir, exist_ok=True)
