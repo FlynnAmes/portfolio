@@ -141,3 +141,11 @@ which will run the training script (replace train with the file of choice) to tr
 ```
 uvicorn src.app:app
 ```
+
+<h2> Future improvements </h2>
+
+<ul> 
+<li> Future drift: Currently lacking implementation of monitoring to check for drift of model performance </li>
+
+</ul>
+
