@@ -26,6 +26,11 @@ def input_data():
              'late_60_89': int(1), 
              'monthly_inc': float(2000),}
 
+@pytest.fixture
+def output_data():
+    return {'inference': 1,
+            'probability': 0.77}
+
 ######################
 # define tests
 ######################
@@ -48,27 +53,33 @@ def test_pydantic_feature_schema_rejects_bad_data(input_data):
 
 @pytest.mark.unit
 # just accepts one value so no need for fixture yet
-def test_pydantic_prediction_schema_accepts_good_data():
-    assert prediction(inference=1)
+def test_pydantic_prediction_schema_accepts_good_data(output_data):
+    assert prediction(**output_data)
 
 
 @pytest.mark.unit
-def test_pydantic_prediction_schema_rejects_bad_data():
+def test_pydantic_prediction_schema_rejects_bad_data(output_data):
+    # change one of the values to make incorrect type
+    bad_output_data = output_data.copy()
+    bad_output_data['inference'] = 'a string'
+
     # then check whether appropiate error is raised
     with pytest.raises(ValidationError):
-        features(inference='a string')
+        features(**bad_output_data)
 
 #################
 # unit tests for API
 #################
 
-# can set up testclient to test app without manually starting server
-client = TestClient(app)
+# # can set up testclient to test app without manually starting server
+# client = TestClient(app)
 
 
 @pytest.mark.unit
 def test_get_OK_status_code_good_data(input_data):
-    assert client.post('/predict', json=input_data).status_code == 200
+
+    with TestClient(app) as client:
+        assert client.post('/predict', json=input_data).status_code == 200
 
 
 @pytest.mark.unit
@@ -76,7 +87,8 @@ def test_get_error_status_code_bad_data(input_data):
     # test removing a row
     incomplete_data = input_data.copy().pop('late_60_89')
     # should get error saying that data syntactically correct but could not be processed
-    assert client.post('/predict', json=incomplete_data).status_code == 422
+    with TestClient(app) as client:
+        assert client.post('/predict', json=incomplete_data).status_code == 422
 
 ##################
 # integration tests for the API

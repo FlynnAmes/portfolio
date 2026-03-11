@@ -20,3 +20,4 @@ class features(BaseModel):
 
 class prediction(BaseModel):
     inference: int
+    probability: float

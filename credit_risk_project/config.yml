@@ -10,3 +10,6 @@ recall_weightings:
   lenient: 0.75
   standard: 1
   aggressive: 1.5
+production_model_type: 'xgb'
+production_threshold_type: 'standard'
+

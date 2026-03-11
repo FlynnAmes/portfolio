@@ -1,9 +1,10 @@
 <h1> Overview </h1>
 
-This project (polishing/refactoring in progress) provides a classifier that predicts whether or not someone will default on a loan within two years of acquiring it.
+
+This project provides a classifier that predicts whether or not someone will default on a loan within two years of acquiring it.
 It is designed to be used by a (hypothetical) fintech company that provides a fast response 
-to a loan application. For now the model is provides a simple 'accept or reject' output (where 1 indicates a possible delinquency and thus rejection). <br> <br>
-The app is containerised via docker and tested using pytest (automated on push to repo via GitHub actions). Data is preprocessed with Pandas and NumPy. ML models are built using sklearn pipelines and XGboost. The application and its endpoints are configured using FastAPI.
+to a loan application. The model provides an 'accept or reject' output (where 1 indicates a possible delinquency and thus rejection), as well as the probabiltiy of default. There is the option to customise the model used for a harsher or more lenient decision threshold for classifications. <br> <br>
+The app is containerised via Docker and tested using Pytest (automated on push to repo via GitHub actions). Data is preprocessed with Pandas and NumPy. ML models are built using sklearn pipelines and XGBoost. The application and its endpoints are configured using FastAPI.
 
 
 <h2> Contents list </h2>
@@ -16,7 +17,7 @@ The project root directory currently contains:
 - <b> <i> logs/ </i> </b> - upon running the code, contains logged scoring metrics for each trained model, along with cross-validation results and inference times (the latter computed during validation).<br>
 - <b> <i> models/ </i> </b> - the trained ML models in pickle format. <br>
 - <b> <i> notebooks_and_in_prog/ </i> </b> - notebooks for messier EDA and initial exploratory testing (note these are messy and currently lack much expalantion, will either delete or refine later). <br>
-- <b> <i> src/ </i> </b> - Python scripts used for creating ML models and deploying the application. Includes initial cleaning of data, training of ML models, validation, inference, paths, schemas (pydantic classes for input and output data) and the application file itself. <br>
+- <b> <i> src/ </i> </b> - Python scripts used for creating ML models and deploying the application. Includes initial cleaning of data, training of ML models, tuning of decision threshold, validation, inference, paths, schemas (pydantic classes for input and output data) and the application file itself. <br>
 - <b> <i> tests/ </i> </b> - contains both unit and integration tests. <br>
 - <b> <i> compose.yml </i> </b> - script that sets up running instance of a docker container, for running the code across any system. <br>
 - <b> <i> config.yml </i> </b> - parameters used during model training (e.g., random seeds, number of folds in cross validation etc.). <br>
