@@ -38,26 +38,8 @@ def return_inference(input_features, model_object):
 
     # get predicted probability
     y_pred_proba_default = np.squeeze(model_object.predict_proba(data_df_reordered))[-1]
-    # print('\n', y_pred_proba_default, '\n')
-    # convert prediction and probability of default to standard integer and float so 
-    # that can be serialised by FastAPI
-    return int(y_pred), float(y_pred_proba_default)
 
-# feature_dict = { 
-#              'rev_util': float(0.2),
-#              'age': int(37),
-#              'late_30_59': int(1), 
-#              'debt_ratio': float(0.2), 
-#              'open_credit': int(1),
-#              'late_90': int(0), 
-#              'dependents': int(2), 
-#             'real_estate': int(0),  
-#             'late_60_89': int(1), 
-#                  'monthly_inc': float(2000),
-#                 } 
 
-# import pickle as pkl
-# with open('models/tuned/xgb/standard.pkl', 'rb') as f:
-#     model = pkl.load(f)
-
-# print(return_inference(features(**feature_dict), model_object=model))
+    # return the decision, probability of defaut and decision threshold used
+    # convert numpy format to standard int and float so that can be serialised by FastAPI
+    return int(y_pred), float(y_pred_proba_default), float(model_object.best_threshold_)

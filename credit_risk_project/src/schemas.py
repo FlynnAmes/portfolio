@@ -19,5 +19,6 @@ class features(BaseModel):
 
 
 class prediction(BaseModel):
-    inference: int
+    decision: int
     probability: float
+    decision_threshold: float

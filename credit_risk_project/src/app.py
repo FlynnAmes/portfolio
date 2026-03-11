@@ -1,6 +1,7 @@
 """ API that takes data and returns simple true or false prediction for default or not """
 
 from fastapi import FastAPI
+from fastapi import HTTPException
 from contextlib import asynccontextmanager
 from src.schemas import features, prediction
 from src.inference import return_inference
@@ -44,14 +45,25 @@ app = FastAPI(lifespan=lifespan)
 @app.post('/predict')
 def return_prediction(data: features):
     # run ML model
-    inference, probability_default = return_inference(data, app.state.model)
+    decision, probability_default, decision_threshold = return_inference(data, app.state.model)
 
     # return inference, using pydantic output schema
-    return prediction(**{'inference': inference, 
-                       'probability': probability_default})
+    return prediction(**{'decision': decision, 
+                       'probability': probability_default,
+                       'decision_threshold': decision_threshold})
 
 
 # health endpoint to check that the API is running
 @app.get('/health')
 def health():
     return {'status': 'OK'}
+
+
+# ready enpoint to check that the server is running and ready to give output
+@app.get('/ready')
+def ready():
+    # raise error if server is up but nodel not yet loaded
+    if app.state.model is None:
+        raise HTTPException(status=503, detail='model not yet loaded')
+    else:
+        return {'status': 'ready'}
