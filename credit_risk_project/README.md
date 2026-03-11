@@ -1,99 +1,121 @@
-<h1> Overview </h1>
+## Overview
 
 
-This project provides a classifier that predicts whether or not someone will default on a loan within two years of acquiring it.
-It is designed to be used by a (hypothetical) fintech company that provides a fast response 
-to a loan application. The model provides an 'accept or reject' output (where 1 indicates a possible delinquency and thus rejection), as well as the probabiltiy of default. There is the option to customise the model used for a harsher or more lenient decision threshold for classifications. <br> <br>
-The app is containerised via Docker and tested using Pytest (automated on push to repo via GitHub actions). Data is preprocessed with Pandas and NumPy. ML models are built using sklearn pipelines and XGBoost. The application and its endpoints are configured using FastAPI.
+This project implements an end-to-end machine learning system for predicting
+loan default risk. 
+The system includes:
+
+- Data preprocessing and feature pipelines (Pandas + NumPy + scikit-learn + XGBoost)
+- Model training and hyperparameter tuning (RandomSearchCV)
+- Model validation and decision threshold optimisation
+- A production inference API (FastAPI)
+- Containerised deployment (Docker)
+- Automated testing and CI (Pytest + GitHub Actions)
 
 
-<h2> Contents list </h2>
-
-The project root directory currently contains:
-
-<ul>
-
-- <b> <i> data/ </i> </b> - raw data (see below for source) used to train model, as well as processed (i.e., cleaned) data used for model training and validation. <br>
-- <b> <i> logs/ </i> </b> - upon running the code, contains logged scoring metrics for each trained model, along with cross-validation results and inference times (the latter computed during validation).<br>
-- <b> <i> models/ </i> </b> - the trained ML models in pickle format. <br>
-- <b> <i> notebooks_and_in_prog/ </i> </b> - notebooks for messier EDA and initial exploratory testing (note these are messy and currently lack much expalantion, will either delete or refine later). <br>
-- <b> <i> src/ </i> </b> - Python scripts used for creating ML models and deploying the application. Includes initial cleaning of data, training of ML models, tuning of decision threshold, validation, inference, paths, schemas (pydantic classes for input and output data) and the application file itself. <br>
-- <b> <i> tests/ </i> </b> - contains both unit and integration tests. <br>
-- <b> <i> compose.yml </i> </b> - script that sets up running instance of a docker container, for running the code across any system. <br>
-- <b> <i> config.yml </i> </b> - parameters used during model training (e.g., random seeds, number of folds in cross validation etc.). <br>
-- <b> <i> dockerfile </i> </b> - used to create the docker image for running the project in an isolated and reproducible envrionment. <br>
-- <b> <i> pyproject.toml </i> </b> - specifies custom 'marks' for pytests, and also build options (where building project as a package locally). <br>
-- <b> <i> requirements.txt </i> </b> - contains python packages required to run the code. <br>
-
-</ul>
-
-<h2> Implementation details to note: </h2>
-
-<ul>
-<li> The model performs a single inference (rather than batch inference). This is to simulate an instant response to the loan application (e.g., on a fintech app). Therefore only one value must be given for each feature. </li>
-<li> 10 input features are required. Their names and types can be found in src/schemas.py. </li>
-
-</ul>
+The API returns:
+- predicted default class
+- probability of default
+- decision threshold used for classification
 
 
-<h2> The data </h2>
+The system simulates a real-time credit decision engine for a fintech
+loan application workflow.
 
-The model is trained on a credit risk dataset linked <a href=https://www.kaggle.com/datasets/adilshamim8/credit-risk-benchmark-dataset> here </a>. Note that the dataset has an artifical class balance (50% defaulting, likely at least 10 times larger than the proportion of defaults typically observed in a bredit risk population).
-The probabilities of default outputted by the model should therefore not be interpreted as real world default probabilities (the probabilities would be expected to be much lower using real world data).
-While a correction can be made to probabilities to account for differences between the sammple dataset and 
-population, robust calibration of these probabilites would require a large dataset (because limited prevalence of positive classifications would result in very large confidence intervals at larger probabilities).
 
-The brier scores and reliability diagrams therefore are computed assuming that the population encountered during 
+## Repository Structure
+
+```
+├── data/
+│   ├── processed/
+│   └── raw/   
+│  
+├── logs/                          # training, validation, and inference logs (gitignored)
+├── models/                        # trained model artifacts (gitignored)
+├── notebooks/                     # exploratory analysis
+│
+├── src/                           # training, validation, and inference code
+│   ├── app.py
+│   ├── inference.py
+│   ├── ingest_and_clean_data.py
+│   ├── paths.py
+│   ├── schemas.py
+│   ├── train.py
+│   ├── tune.py
+│   └── validate.py
+│   
+├── tests/                         # unit and integration tests
+│
+├── Dockerfile
+├── compose.yml
+├── config.yml
+├── pyproject.toml
+├── requirements.txt
+├── .gitignore
+└──  README.md
+```
+
+
+Models, processed data, and logs are excluded from version control. <br>
+All artifacts can be regenerated using the training pipeline.
+
+## Data
+
+The model is trained on a credit risk dataset linked <a href=https://www.kaggle.com/datasets/adilshamim8/credit-risk-benchmark-dataset> here</a>. 
+
+
+Note the dataset has an artificial class balance of 50% defaulting. This is >10 times larger than the proportion of defaults typically observed in a credit risk population.
+Therefore, probabilities of default, obtained during inference, should not be interpreted as real world default probabilities (expected to be much lower using real world data). <br>
+While a correction to outputted probabilities can be made to account for sample vs population class balance discrepancies, robust calibration of these probabilities would require a large dataset (because the limited prevalence of positive classifications would result in very large confidence intervals at larger probabilities).
+
+The brier scores and reliability diagrams are therefore computed assuming that the population encountered during 
 inference has the same class balance as that used in training.
 
 
-<h2> Model details </h2>
+## Model
 
-The algorithm employed in the inference model is an XGboost classifier.
-Logistic regression models are also trained and their performance evaluated.
-
-Average precision of positive classifications is the scoring metric used to find optimal hyperparameters via 
-a random search.
-The model decision (probability) threshold is then tuned using an f_beta score. #
-By default, recall is weighted more than precision. This is because a false negative (i.e., not catching a potential delinquency) is deemed more costly than false positives.
-This weighting can be altered for when the business preferences change regarding the importance of false negatives vs false positives, and the model retuned.
+**Models evaluated:** Logistic Regression and XGBoost  
+**Model selection:** RandomSearchCV using average precision  
+**Threshold optimisation:** F-beta score with recall weighted higher than precision  
+**Final model:** XGBoost classifier (configurable variants)  
+**Inference latency:** < 1 second per prediction
 
 
-Model inference time is considered. Logistic regression outperforms XGboost here, but the performance of either algorithm is deemed good enough for the context (singular inferences obtainable in under a second).
-Logistic regression interpretability is found to degrade with attempts to better tailor it 
-to the non-linear decision boundary (Improved recall of positive classifications is accompanied by a reversal-in-sign in relationship between features and the log-of-odds of defaulting). Given these results, XGboost is chosen.
+## Quickstart 
 
-All models are trained using sklearn pipeline objects, to avoid data leakage. This also means that at inference, the model simply needs to be loaded and .predict() method called.
-A randomSearchCV is used to obtain optimal hyperparameters (see src/train.py).
+First download the data <a href=https://www.kaggle.com/datasets/adilshamim8/credit-risk-benchmark-dataset> here</a> (placing in data/raw) and <a href=https://docs.docker.com/desktop/> install docker </a>if you haven't already.
 
-<h2> How to use the model and app to get a prediction </h2>
-
-To guarantee the code/application always works on your machine, run it in a containerised environment via docker. First, <a href=https://docs.docker.com/desktop/> install docker </a> on your system.
-
-Next, open a terminal, navigate to the project directory, and run the following:
+With a docker server up and running, open a terminal, navigate to the repository directory, and use the following command:
 
 ``` 
-docker compose up
+docker compose up -d
 ``` 
 
-This will first build a docker image from the dockerfile and then run an instance of that image (i.e., a container) on your system. Upon start-up of the container, the FastAPI server is launched.
+This will build the docker image and run a corresponding container, within which the API server will be launched.
 
-Now the server is running on your machine, a POST HTTP request can be sent with feature data attached. Upon doing so, a prediction for defaulting is returned in JSON format. 
-This can all be done via the requests package e.g., using the following:
+After this, a POST HTTP request can be sent to the server with feature data attached, e.g., using the requests package in python:
 
 ``` 
 import requests
 response = requests.post('http://your_server_address:8000/predict', json=feature_dict)
-print(response.content) 
 ```
-where <i>feature_dict</i> is a dictionary of features (the keys) and their associated values and 
-<i>your_server_address</i> is the address of the running instance of the server.
-If you're running on your local machine (local host), this will be 127.0.0.1.
+
+where <i>feature_dict</i> contains 10 input features validated using Pydantic schemas (see src/schemas.py). <br>
+The response from the API will look something like:
+
+
+```
+{
+  "prediction": 1,
+  "probability_default": 0.77,
+  "decision_threshold": 0.55
+}
+```
 
 To run the code that trains the model (and logs output), perform the following command:
 
 ```
-docker exec -i credit_risk_container python train.py
+docker exec -i credit_risk_container python src/train.py
 ```
 
 which runs the training code inside the container. Other files can be run by replacing train.py with the file of choice.
@@ -104,48 +126,20 @@ Once finished with the project, running instances of the container can be disman
 docker compose down
 ```
 
-<h2> Notes on running without docker </h2>
+## Running without Docker
 
-For best results without docker, one should create a seperate python environment. This project uses Python version 3.11. One can create a conda environment specifying the python version using the following command:
-
-``` 
-conda create -n <env_name> python=3.11
-```
-
-where <i>env_name</i> is an environment name you specify. Activate the environment:
-
-```
-conda activate <env_name>
-```
-
-Then navigate into the project directory and install the required python dependencies:
+In the repository directory, run the following commands in order to get the server running
 
 ```
 pip install -r requirements.txt
-```
-
-If running without docker, the project directory may need to be added to your python path otherwise relative imports may fail. This can be done manually, but a cleaner option is to install the project as a module:
-
-```
 pip install -e .
-```
-
-Files can then be run by running them as modules in the terminal, e.g., with the following command:
-
-```
-python -m src.train
-```
-
-which will run the training script (replace train with the file of choice) to train the ML models. The application server can be initiated with the following command:
-
-```
 uvicorn src.app:app
 ```
 
-<h2> Future improvements </h2>
+## Future improvements
 
-<ul> 
-<li> Future drift: Currently lacking implementation of monitoring to check for drift of model performance </li>
+- Use inference logs for monitoring model performance and detecting data drift
+- Model versioning and experimeny tracking using MLflow
+- Simple pipeline orchestration using Prefect
 
-</ul>
 
