@@ -33,7 +33,7 @@ def log_validation_params(y_pred, y_validate, model_name: str, scoring_name: str
 
     # create save directory for logs if not already created. Fow now using day to 
     # distinguish between versions/experiments
-    savedir = LOGS_PATH / model_name / scoring_name / datetime.now().strftime('%Y%m%d') / 'validation'
+    savedir = LOGS_PATH / 'model_development' / model_name / scoring_name / datetime.now().strftime('%Y%m%d') / 'validation'
 
     # if dir name does not exist, make it
     os.makedirs(savedir, exist_ok=True)
@@ -65,14 +65,14 @@ def compute_and_log_inference_time(clf, X_validate, model_name: str, scoring_nam
     inference_time = timeit.timeit(lambda: clf.predict(X_validate), number=number)
 
     # save inference time. first open file
-    with open(LOGS_PATH / 'inference_times.json', 'r') as f:
+    with open(LOGS_PATH / 'model_development' / 'inference_times.json', 'r') as f:
         inference_file_data = json.load(f)
     
     # assign value
     inference_file_data[model_name + '_' + scoring_name] = inference_time
 
     # and save (need to seperate owing to need for read and write permissions)
-    with open(LOGS_PATH / 'inference_times.json', 'w') as f:
+    with open(LOGS_PATH / 'model_development' / 'inference_times.json', 'w') as f:
         json.dump(inference_file_data, f, indent=4)
 
 
@@ -91,10 +91,10 @@ def validate_models():
 
     # create an initial empty JSON file for the inference times of all models
     os.makedirs(LOGS_PATH, exist_ok=True)
-    Path(LOGS_PATH / 'inference_times.json').touch()
+    Path(LOGS_PATH / 'model_development' / 'inference_times.json').touch()
 
     # add braces so that can append to file
-    with open(LOGS_PATH / 'inference_times.json', 'w') as f:
+    with open(LOGS_PATH / 'model_development' / 'inference_times.json', 'w') as f:
         f.write('{}')
 
     ##########

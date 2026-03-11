@@ -27,7 +27,7 @@ def ingest_and_clean_data(config_path):
     # Filtering
     #############
 
-    print('initial shape: \n', df.shape)
+    print('\n', 'initial shape:', df.shape, '\n')
 
     # first removing revolving utilisation less than 5 - threshold determined from EDA
     df_filtered = df[df['rev_util'] < 5]
@@ -45,7 +45,7 @@ def ingest_and_clean_data(config_path):
     # filter data using mask
     df_filtered = df_filtered[~mask_debt_ratio_bad_data]
 
-    print('shape after filtering: \n', df_filtered.shape)
+    print('\n shape after filtering:', df_filtered.shape, '\n')
 
     # seperate features and target
     X = df_filtered.drop(columns=['dlq_2yrs'])
@@ -66,7 +66,7 @@ def ingest_and_clean_data(config_path):
 
     #TODO: do cleaner way to log data version, so that can configure which to use
     # create directory for logs of data version if not already created
-    os.makedirs(LOGS_PATH / 'data_v1', exist_ok=True)
+    os.makedirs(LOGS_PATH / 'data' / '_v1', exist_ok=True)
 
     # dump class balance metrics to data log
     with open(LOGS_PATH / 'data_v1' / 'data_balance.json', 'w') as f:

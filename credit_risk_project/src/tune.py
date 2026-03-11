@@ -20,7 +20,7 @@ def log_tuning_results(model_object, model_name: str , scoring_name: str):
 
     # create save directory for logs if not already created. Fow now using day to 
     # distinguish between versions/experiments
-    savedir = LOGS_PATH / model_name / scoring_name / datetime.now().strftime('%Y%m%d') / 'tuning'
+    savedir = LOGS_PATH / 'model_development' / model_name / scoring_name / datetime.now().strftime('%Y%m%d') / 'tuning'
     os.makedirs(savedir, exist_ok=True)
 
     # create dictionary with decision threshold and its performance. convert to float to guarantee
