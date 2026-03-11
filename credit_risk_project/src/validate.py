@@ -115,4 +115,5 @@ def validate_models():
 
 # if script run, then validate the models!
 if __name__ == '__main__':
+    # can load config here if the script is run, to maintain ability to run locally
     validate_models()

@@ -60,15 +60,16 @@ def save_model(clf, model_name):
         pkl.dump(clf, f)
 
 
-def train_models():
-    """ main function for training the models """
+def train_models(config_path):
+    """ main function for training the models. 
+    config_path specifies path to YAML file containing config params """
     
     ###############
     # loading config parameters and data
     ###############
    
     # get from yaml
-    with open(CONFIG_PATH) as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     random_seed = config['random_seed']
@@ -177,4 +178,5 @@ def train_models():
 
 # if script run, then train the models!
 if __name__ == '__main__':
-    train_models()
+    # if file called, then use default configuration path
+    train_models(config_path=CONFIG_PATH)
