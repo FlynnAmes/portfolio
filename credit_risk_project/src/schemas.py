@@ -20,5 +20,5 @@ class features(BaseModel):
 
 class prediction(BaseModel):
     decision: int
-    probability: float
+    probability_default: float
     decision_threshold: float

@@ -16,5 +16,5 @@ def input_data():
 @pytest.fixture
 def output_data():
     return {'decision': 1,
-            'probability': 0.77,
+            'probability_default': 0.77,
             'decision_threshold': 0.4}

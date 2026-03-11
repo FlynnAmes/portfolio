@@ -97,7 +97,7 @@ def return_prediction(data: features):
 
     # return inference, using pydantic output schema
     return prediction(**{'decision': decision, 
-                       'probability': probability_default,
+                       'probability_default': probability_default,
                        'decision_threshold': decision_threshold})
 
 

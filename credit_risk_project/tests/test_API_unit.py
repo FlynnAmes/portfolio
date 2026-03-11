@@ -22,7 +22,7 @@ def test_get_expected_output_keys_with_good_data(input_data):
 
     with TestClient(app) as client:
         output = client.post('/predict', json=input_data).json()
-        assert list(output.keys()) == ['decision', 'probability', 'decision_threshold']
+        assert list(output.keys()) == ['decision', 'probability_default', 'decision_threshold']
 
 
 @pytest.mark.unit
