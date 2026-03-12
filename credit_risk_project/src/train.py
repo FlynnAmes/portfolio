@@ -125,13 +125,13 @@ def train_models(config_path):
     }
 
     params_dict_xgb = {'clf__learning_rate': stats.loguniform(0.01, 1), 
-                            'clf__n_estimators': np.linspace(100, 2000, 20, dtype=np.int64),
+                            'clf__n_estimators': np.linspace(100, 2000, 10, dtype=np.int64),
                             'clf__max_depth': np.linspace(2, 20, 10, dtype=np.int64), 
                             'clf__gamma': np.linspace(0, 5, 6, dtype=np.float64),
                             'clf__subsample': np.linspace(0.1, 1, 10, dtype=np.float64),
                             'clf__colsample_bytree': np.linspace(0.1, 1, 10, dtype=np.float64),
-                            'clf__reg_alpha': np.linspace(0, 1, 11, dtype=np.int64),
-                            'clf__reg_lambda': np.linspace(0, 1, 11, dtype=np.int64),   
+                            'clf__reg_alpha': np.linspace(0, 1, 11, dtype=np.float64),
+                            'clf__reg_lambda': np.linspace(0, 1, 11, dtype=np.float64),   
     }
 
     # set up dictionary containing models so can easily loop through the configs
