@@ -28,6 +28,9 @@ def log_validation_params(y_pred, y_validate, model_name: str, scoring_name: str
      will compute and log the brer score, to get measure of calibration of predicted probabilities
      """
     
+#TODO: need to put in something so diesn't fail silently when tune.py not exist.
+# TODO: compute metrics for pretuned models as well to compare effects of tuning
+
     # get scoring metrics (including recall)
     scoring_metrics = classification_report(y_true=y_validate, y_pred=y_pred, output_dict=True)
 
@@ -90,12 +93,9 @@ def validate_models():
         y_validate = pkl.load(f)
 
     # create an initial empty JSON file for the inference times of all models
-    os.makedirs(LOGS_PATH, exist_ok=True)
-    Path(LOGS_PATH / 'model_development' / 'inference_times.json').touch()
-
-    # add braces so that can append to file
+    os.makedirs(LOGS_PATH / 'model_development', exist_ok=True)
     with open(LOGS_PATH / 'model_development' / 'inference_times.json', 'w') as f:
-        f.write('{}')
+        json.dump({}, f)
 
     ##########
     # main validation loop

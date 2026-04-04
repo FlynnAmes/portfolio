@@ -92,20 +92,20 @@ def train_models(config_path):
     ###########
 
     # create log transformer
-    LogTransformer = FunctionTransformer(np.log1p)
+    log_transformer = FunctionTransformer(np.log1p)
 
     # create custom columntransformer to only log scale those that need logging (for Logistic regression)
-    ctLogScaleSome = ColumnTransformer([('scale_log', LogTransformer, ['monthly_inc', 'rev_util', 'debt_ratio'])], 
+    ctLogScaleSome = ColumnTransformer([('scale_log', log_transformer, ['monthly_inc', 'rev_util', 'debt_ratio'])], 
                                         remainder='passthrough')
     # create column transformer that applied spline with 3 knots to open credit (determined from EDA)
-    ctLogSomeSplineOpCred = ColumnTransformer([('scale_log', LogTransformer, ['monthly_inc', 'rev_util', 'debt_ratio']), 
+    ctLogSomeSplineOpCred = ColumnTransformer([('scale_log', log_transformer, ['monthly_inc', 'rev_util', 'debt_ratio']), 
                                             ('spline', SplineTransformer(n_knots=spline_knots, degree=spline_deg), ['open_credit'])], 
                                         remainder='passthrough')
 
     # create pipes for logistic regression, firstly all log transformed, then only some, and finally some with open credit
     # a spline transform applied. saga solver to allow elastic net regression if needed.
     # Note all are standarised afterwards
-    pipeLrAllLog = Pipeline([('scale_log', LogTransformer), ('scale_stand', StandardScaler()), 
+    pipeLrAllLog = Pipeline([('scale_log', log_transformer), ('scale_stand', StandardScaler()), 
                             ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
     pipeLrSomeLog = Pipeline([('scale_log', ctLogScaleSome), ('scale_stand', StandardScaler()), 
                             ('clf', LogisticRegression(solver='saga', random_state=random_seed, max_iter=lr_max_iter))])
@@ -153,13 +153,13 @@ def train_models(config_path):
     # main training loop
     #######################
 
-    for model in pipe_dictionary.keys():
+    for model_name, config in pipe_dictionary.items():
 
         # set up randomised grid search, with corresponding pipeline and params dict
-        clf = RandomizedSearchCV(pipe_dictionary[model]['pipeline'], pipe_dictionary[model]['params_dict'], 
+        clf = RandomizedSearchCV(config['pipeline'], config['params_dict'], 
                                 cv=cv_folds, scoring=cv_scoring_metric, random_state=random_seed)
         
-        print(model, '\n')
+        print(model_name, '\n')
 
         # fit the classifier to training data. random search will test hyperparameters in different folds. 
         # Will then return model object at end fitted to entire training dataset
@@ -168,14 +168,17 @@ def train_models(config_path):
         print('model fitted', '\n')
 
         # then serialise model as pkl, saving it
-        save_model(clf=clf, model_name=model)
+        save_model(clf=clf, model_name=model_name)
         
         print('model saved', '\n')
 
         # now log parameters in model
-        log_training_params(clf=clf, model_name=model)
+        log_training_params(clf=clf, model_name=model_name)
 
         print('params logged', '\n')
+        print('best parameters: \n', clf.best_params_, '\n')
+
+
 
 
 # if script run, then train the models!

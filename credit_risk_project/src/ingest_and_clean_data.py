@@ -10,6 +10,8 @@ import pickle as pkl
 from src.paths import CONFIG_PATH, DATA_PATH, LOGS_PATH
 
 
+#TODO: rename validate data to test data (to match neural net naming convention)
+
 def ingest_and_clean_data(config_path):
 
     # get random seed and training proportion for train test split
@@ -20,8 +22,9 @@ def ingest_and_clean_data(config_path):
     train_size = config['train_size']
     train_prop_no_tune = config['train_prop_no_tune']
 
+
     # load in data
-    df = pd.read_csv(DATA_PATH / 'raw' / 'Credit_Risk_Benchmark_Dataset.csv')
+    df = pd.read_csv(DATA_PATH / 'raw' / 'credit_risk_benchmark_dataset.csv')
 
     #############
     # Filtering
@@ -69,7 +72,7 @@ def ingest_and_clean_data(config_path):
     os.makedirs(LOGS_PATH / 'data' / '_v1', exist_ok=True)
 
     # dump class balance metrics to data log
-    with open(LOGS_PATH / 'data_v1' / 'data_balance.json', 'w') as f:
+    with open(LOGS_PATH / 'data' / '_v1' / 'data_balance.json', 'w') as f:
         json.dump(sample_rate_dict, f)
 
     # save data to pkl files

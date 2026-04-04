@@ -27,6 +27,12 @@ jobs:
     steps:
 # first clone the repo into the runner's VM
     - uses: actions/checkout@v5
+
+# then set up environment keys for kaggle dataset and save to json file
+    - name: set up kaggle keys
+      run: |
+        mkdir -p ~/.kaggle
+        echo '{"KAGGLE_USERNAME": "${{ secrets.KAGGLE_USERNAME }}","KAGGLE_API_TOKEN": "${{ secrets.KAGGLE_API_TOKEN }}"}' > ~/.kaggle/kaggle.json
 # then set up python, using matrix of versions defined above
     - name: Setting up python
       uses: actions/setup-python@v5
