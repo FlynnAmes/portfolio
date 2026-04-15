@@ -5,8 +5,8 @@ Aspriring machine learning engineer focused on building production-ready ML syst
 #### <a href=https://github.com/FlynnAmes/credit_risk_classifier> Productionised credit risk prediction system </a>: 
 
 - A real-time inference API on AWS (Lambda + API Gateway)
-- Infrastructure defined via Terraform (IaC) with remote state
-- Containerised FastAPI service with CI (GitHub Actions) and model caching for latency optimisation
+- CI/CD pipeline enabling automated retraining, image rebuilds, deployment, and promotion from dev to production with immutable versioning for traceability
+- Terraform-based infrastructure using modular design and remote state for reproducible deployments
 
 #### <a href=https://github.com/FlynnAmes/electricity_demand_forecasting> Electricity demand forecasting </a>:
 
