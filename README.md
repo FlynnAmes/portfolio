@@ -1,6 +1,5 @@
 # Overview 
 
-Aspiring machine learning engineer focused on building production-ready ML systems.
 
 #### <a href=https://github.com/FlynnAmes/credit_risk_classifier> Productionised credit risk prediction system </a>: 
 
